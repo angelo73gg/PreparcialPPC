@@ -1,6 +1,8 @@
 package com.example.preparcial.di
 
-import com.example.preparcial.data.repository.PlanRepositoryImpl
+import com.example.preparcial.data.remote.RetrofitClient
+import com.example.preparcial.data.repository.MockPlanRepositoryImpl
+import com.example.preparcial.data.repository.RemotePlanRepositoryImpl
 import com.example.preparcial.domain.repository.PlanRepository
 import com.example.preparcial.domain.usecase.CrearPlanUseCase
 import com.example.preparcial.domain.usecase.GetPlanByIdUseCase
@@ -10,17 +12,28 @@ import com.example.preparcial.domain.usecase.RegistrarPagoUseCase
 /**
  * Contenedor de Inyección de Dependencias Manual (AppContainer).
  * Provee instancias de repositorios y casos de uso en toda la aplicación de manera simple y robusta.
- * No requiere plugins ni dependencias externas de Gradle.
  */
 class AppContainer {
 
-    // Repositorio principal (Actualmente Mock in-memory)
-    // TODO: Si se conecta Retrofit, pasar ApiService a PlanRepositoryImpl(apiService)
-    val planRepository: PlanRepository by lazy {
-        PlanRepositoryImpl()
+    companion object {
+        /**
+         * TODO: [PARCIAL] INTERRUPTOR PRINCIPAL PARA EL EXAMEN:
+         * Setear en 'true'  -> Usa datos simulados (Mock) en memoria para probar la UI offline.
+         * Setear en 'false' -> Usa Retrofit para conectar con FastAPI en http://10.0.2.2:8000/
+         */
+        private const val USE_MOCK_DATA = true
     }
 
-    // Casos de uso de la capa Domain
+    // Selecciona el repositorio según el interruptor USE_MOCK_DATA
+    val planRepository: PlanRepository by lazy {
+        if (USE_MOCK_DATA) {
+            MockPlanRepositoryImpl()
+        } else {
+            RemotePlanRepositoryImpl(RetrofitClient.apiService)
+        }
+    }
+
+    // Casos de uso de la capa Domain (Consumen la abstracción del repositorio)
     val getPlanesUseCase: GetPlanesUseCase by lazy {
         GetPlanesUseCase(planRepository)
     }

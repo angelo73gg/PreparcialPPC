@@ -3,22 +3,23 @@ package com.example.preparcial.data.remote
 import com.example.preparcial.domain.model.Miembro
 import com.example.preparcial.domain.model.Pago
 import com.example.preparcial.domain.model.PlanAhorro
+import com.google.gson.annotations.SerializedName
 
 /**
- * Data Transfer Objects (DTOs) para deserializar respuestas JSON de la API REST .NET.
+ * DTOs (Data Transfer Objects) para deserializar JSON devuelto por FastAPI (Pydantic v2).
  *
- * TODO: Ajustar las propiedades según el contrato JSON exacto del backend en .NET (Visual Studio).
- * Ejemplo: @SerializedName("id") val id: String
+ * TODO: [PARCIAL] Ajustar los nombres de los atributos en @SerializedName(...) si la API de tu parcial
+ * utiliza nombres en inglés o snake_case (ejemplo: @SerializedName("plan_id") val id: String?).
  */
 
 data class PlanDto(
-    val id: String? = null,
-    val motivo: String? = null,
-    val meta: Double? = null,
-    val meses: Int? = null,
-    val categoria: String? = null,
-    val miembros: List<MiembroDto>? = null,
-    val pagos: List<PagoDto>? = null
+    @SerializedName("id") val id: String? = null,
+    @SerializedName("motivo") val motivo: String? = null,
+    @SerializedName("meta") val meta: Double? = null,
+    @SerializedName("meses") val meses: Int? = null,
+    @SerializedName("categoria") val categoria: String? = null,
+    @SerializedName("miembros") val miembros: List<MiembroDto>? = null,
+    @SerializedName("pagos") val pagos: List<PagoDto>? = null
 ) {
     fun toDomain(): PlanAhorro {
         return PlanAhorro(
@@ -34,8 +35,8 @@ data class PlanDto(
 }
 
 data class MiembroDto(
-    val id: String? = null,
-    val nombre: String? = null
+    @SerializedName("id") val id: String? = null,
+    @SerializedName("nombre") val nombre: String? = null
 ) {
     fun toDomain(): Miembro {
         return Miembro(
@@ -46,11 +47,11 @@ data class MiembroDto(
 }
 
 data class PagoDto(
-    val id: String? = null,
-    val planId: String? = null,
-    val miembroNombre: String? = null,
-    val monto: Double? = null,
-    val fecha: String? = null
+    @SerializedName("id") val id: String? = null,
+    @SerializedName("planId") val planId: String? = null,
+    @SerializedName("miembroNombre") val miembroNombre: String? = null,
+    @SerializedName("monto") val monto: Double? = null,
+    @SerializedName("fecha") val fecha: String? = null
 ) {
     fun toDomain(): Pago {
         return Pago(
@@ -62,3 +63,21 @@ data class PagoDto(
         )
     }
 }
+
+/**
+ * Payload JSON enviado en POST para crear un plan.
+ */
+data class CrearPlanRequestDto(
+    @SerializedName("motivo") val motivo: String,
+    @SerializedName("meta") val meta: Double,
+    @SerializedName("meses") val meses: Int,
+    @SerializedName("miembros") val miembros: List<String>
+)
+
+/**
+ * Payload JSON enviado en POST para registrar un pago.
+ */
+data class RegistrarPagoRequestDto(
+    @SerializedName("miembroNombre") val miembroNombre: String,
+    @SerializedName("monto") val monto: Double
+)

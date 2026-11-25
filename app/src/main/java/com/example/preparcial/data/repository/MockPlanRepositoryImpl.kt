@@ -11,16 +11,10 @@ import kotlinx.coroutines.flow.update
 import java.util.UUID
 
 /**
- * Implementación del Repositorio.
- * Actualmente funciona con datos SIMULADOS en memoria (Mock) para desarrollo/examen offline.
- *
- * TODO: Para conectar la API REST real en .NET:
- * 1. Inyectar `private val apiService: ApiService` en el constructor.
- * 2. Reemplazar la manipulación del `planesFlow` por llamadas `apiService.getPlanes()`, `apiService.crearPlan(...)`, etc.
+ * Implementación MOCK en memoria del Repositorio.
  */
-class PlanRepositoryImpl : PlanRepository {
+class MockPlanRepositoryImpl : PlanRepository {
 
-    // Simulación de base de datos en memoria usando Flow reactivo
     private val planesFlow = MutableStateFlow<List<PlanAhorro>>(
         listOf(
             PlanAhorro(
@@ -42,14 +36,16 @@ class PlanRepositoryImpl : PlanRepository {
         )
     )
 
-    override fun getPlanes(): Flow<List<PlanAhorro>> {
-        // TODO: Retornar flow { emit(apiService.getPlanes().body()?.map { it.toDomain() } ?: emptyList()) }
-        return planesFlow
-    }
+    override fun getPlanes(): Flow<List<PlanAhorro>> = planesFlow
 
     override fun getPlanById(id: String): Flow<PlanAhorro?> {
-        // TODO: Llamar a apiService.getPlanById(id)
         return planesFlow.map { lista -> lista.find { it.id == id } }
+    }
+
+    override fun getPagosByPlanId(planId: String): Flow<List<Pago>> {
+        return planesFlow.map { lista ->
+            lista.find { it.id == planId }?.pagos ?: emptyList()
+        }
     }
 
     override suspend fun crearPlan(
@@ -59,7 +55,6 @@ class PlanRepositoryImpl : PlanRepository {
         miembrosNombres: List<String>
     ): Result<PlanAhorro> {
         return try {
-            // TODO: Enviar PlanDto a apiService.crearPlan(dto)
             val nuevosMiembros = miembrosNombres.map { nombre ->
                 Miembro(id = UUID.randomUUID().toString(), nombre = nombre.trim())
             }
@@ -74,10 +69,7 @@ class PlanRepositoryImpl : PlanRepository {
                 pagos = emptyList()
             )
 
-            planesFlow.update { listaActual ->
-                listaActual + nuevoPlan
-            }
-
+            planesFlow.update { listaActual -> listaActual + nuevoPlan }
             Result.success(nuevoPlan)
         } catch (e: Exception) {
             Result.failure(e)
@@ -90,7 +82,6 @@ class PlanRepositoryImpl : PlanRepository {
         monto: Double
     ): Result<Unit> {
         return try {
-            // TODO: Enviar PagoDto a apiService.registrarPago(planId, pagoDto)
             val nuevoPago = Pago(
                 id = UUID.randomUUID().toString(),
                 planId = planId,
